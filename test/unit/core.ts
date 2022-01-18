@@ -539,18 +539,30 @@ describe("snabbdom", function () {
         h2.setAttribute("data-env", "xyz");
         const text = document.createTextNode("Foobar");
         const elm = document.createElement("div");
+        const elm2 = document.createElement("div");
         elm.id = "id";
         elm.className = "class other";
         elm.setAttribute("data", "value");
         elm.appendChild(h2);
         elm.appendChild(text);
+        elm.appendChild(elm2);
+        elm2.setAttribute("data-example", "xyz");
+        elm2.dataset.example1 = "xyz1";
+        elm2.setAttribute("height", "100");
         const vnode = toVNode(elm, domApi);
         assert.strictEqual(vnode.sel, "x-div#id.class.other");
+        // only attr
         assert.deepEqual(vnode.data, { attrs: { data: "value" } });
-        const children = vnode.children as [VNode, VNode];
+        const children = vnode.children as [VNode, VNode, VNode];
         assert.strictEqual(children[0].sel, "x-h2#hx");
-        assert.deepEqual(children[0].data, { attrs: { "data-env": "xyz" } });
+        // only datasets
+        assert.deepEqual(children[0].data, { datasets: { env: "xyz" } });
         assert.strictEqual(children[1].text, "Foobar");
+        // both attrs and datasets
+        assert.deepEqual(children[2].data, {
+          datasets: { example: "xyz", example1: "xyz1" },
+          attrs: { height: "100" },
+        });
       });
     });
     describe("updating children with keys", function () {
