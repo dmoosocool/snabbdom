@@ -539,29 +539,73 @@ describe("snabbdom", function () {
         h2.setAttribute("data-env", "xyz");
         const text = document.createTextNode("Foobar");
         const elm = document.createElement("div");
-        const elm2 = document.createElement("div");
         elm.id = "id";
         elm.className = "class other";
         elm.setAttribute("data", "value");
         elm.appendChild(h2);
         elm.appendChild(text);
-        elm.appendChild(elm2);
-        elm2.setAttribute("data-example", "xyz");
-        elm2.dataset.example1 = "xyz1";
-        elm2.setAttribute("height", "100");
         const vnode = toVNode(elm, domApi);
         assert.strictEqual(vnode.sel, "x-div#id.class.other");
-        // only attr
         assert.deepEqual(vnode.data, { attrs: { data: "value" } });
-        const children = vnode.children as [VNode, VNode, VNode];
+        const children = vnode.children as [VNode, VNode];
         assert.strictEqual(children[0].sel, "x-h2#hx");
-        // only datasets
         assert.deepEqual(children[0].data, { datasets: { env: "xyz" } });
         assert.strictEqual(children[1].text, "Foobar");
-        // both attrs and datasets
-        assert.deepEqual(children[2].data, {
-          datasets: { example: "xyz", example1: "xyz1" },
-          attrs: { height: "100" },
+      });
+
+      it("can parsing datasets and attributes", function () {
+        const onlyAttrs = document.createElement("div");
+        onlyAttrs.setAttribute("foo", "bar");
+        assert.deepEqual(toVNode(onlyAttrs).data, {
+          attrs: { foo: "bar" },
+        });
+
+        const onlyDatasets = document.createElement("div");
+        onlyDatasets.setAttribute("data-onlyDatasets", "onlyDatasets");
+        assert.deepEqual(toVNode(onlyDatasets).data, {
+          datasets: { onlydatasets: "onlyDatasets" },
+        });
+
+        const onlyDataset2 = document.createElement("div");
+        onlyDataset2.setAttribute("data-only-dataset", "only-dataset2");
+        assert.deepEqual(toVNode(onlyDataset2).data, {
+          datasets: {
+            onlyDataset: "only-dataset2",
+          },
+        });
+
+        const onlyDatasets3 = document.createElement("div");
+        onlyDatasets3.dataset.onlydatasets = "onlydatasets3";
+        assert.deepEqual(toVNode(onlyDatasets3).data, {
+          datasets: {
+            onlydatasets: "onlydatasets3",
+          },
+        });
+
+        const onlyDataset4 = document.createElement("div");
+        onlyDataset4.dataset.onlyDataset = "only-dataset4";
+        assert.deepEqual(toVNode(onlyDataset4).data, {
+          datasets: {
+            onlyDataset: "only-dataset4",
+          },
+        });
+
+        const both = document.createElement("div");
+        both.setAttribute("data-example", "test1");
+        both.setAttribute("data-hello-world", "test2");
+        both.setAttribute("data-fooBar", "test3");
+        both.setAttribute("data--o-only-dataset", "test4");
+        both.dataset.again = "again";
+        both.setAttribute("foo", "bar");
+        assert.deepEqual(toVNode(both).data, {
+          attrs: { foo: "bar" },
+          datasets: {
+            example: "test1",
+            helloWorld: "test2",
+            foobar: "test3",
+            OOnlyDataset: "test4",
+            again: "again",
+          },
         });
       });
     });

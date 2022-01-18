@@ -22,7 +22,15 @@ export function toVNode(node: Node, domApi?: DOMAPI): VNode {
     for (i = 0, n = elmAttrs.length; i < n; i++) {
       name = elmAttrs[i].nodeName;
       if (name.startsWith("data-")) {
-        datasets[name.slice(5, name.length)] = elmAttrs[i].nodeValue || "";
+        let datasetsKey = name.slice(5);
+        // only-dataset => onlyDataset
+        if (datasetsKey.includes("-")) {
+          datasetsKey = datasetsKey.replace(/-(\w)/g, (all, letter) =>
+            letter.toUpperCase()
+          );
+        }
+
+        datasets[datasetsKey] = elmAttrs[i].nodeValue || "";
       } else if (name !== "id" && name !== "class") {
         attrs[name] = elmAttrs[i].nodeValue;
       }
@@ -31,8 +39,8 @@ export function toVNode(node: Node, domApi?: DOMAPI): VNode {
       children.push(toVNode(elmChildren[i], domApi));
     }
 
-    if (Object.keys(attrs).length) data.attrs = attrs;
-    if (Object.keys(datasets).length) data.datasets = datasets;
+    if (Object.keys(attrs).length > 0) data.attrs = attrs;
+    if (Object.keys(datasets).length > 0) data.datasets = datasets;
 
     if (
       sel[0] === "s" &&
